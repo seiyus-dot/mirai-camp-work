@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>要件定義書：タスク管理アプリ</title>
+<!-- 見る用のページです。元の内容は docs/requirements.md。md を直したら、このページも同じように直します -->
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --card: #ffffff;
+    --text: #2b2b2b;
+    --sub: #6b6b6b;
+    --line: #e2e2dc;
+    --accent: #2f6fdb;
+    --accent-soft: #eaf1fd;
+    --draft: #b45309;
+    --draft-soft: #fff4e5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+    line-height: 1.8;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 40px 16px 80px; }
+  h1 { font-size: 26px; margin: 0 0 8px; }
+  .draft {
+    display: inline-block;
+    background: var(--draft-soft);
+    color: var(--draft);
+    border: 1px solid #f3d3a6;
+    border-radius: 6px;
+    padding: 2px 10px;
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+  section {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  h2 {
+    font-size: 18px;
+    margin: 0 0 12px;
+    padding-left: 10px;
+    border-left: 4px solid var(--accent);
+  }
+  p, ul, ol { margin: 0; }
+  p + p { margin-top: 8px; }
+  ul, ol { padding-left: 1.4em; }
+  li + li { margin-top: 4px; }
+  code {
+    background: #f0f0ec;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.9em;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--accent-soft); font-weight: 600; }
+  .diagram {
+    background: #fbfbf9;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+    overflow-x: auto;
+    text-align: center;
+  }
+  .group-label {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 4px;
+    padding: 0 8px;
+    margin: 4px 0 6px;
+  }
+  .group-label.add { color: #1e6b3a; background: #e6f4ea; }
+  .group + .group { margin-top: 12px; }
+  .tree {
+    background: #2b3a55;
+    color: #e8edf6;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0 0;
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    overflow-x: auto;
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: 32px;
+  }
+  .tree .child { padding-left: 1.5em; }
+  .tree .c { color: #9fb3d6; font-family: "Hiragino Sans", "Noto Sans JP", sans-serif; }
+  .pages td:nth-child(1) { white-space: nowrap; }
+  .tbl-name { font-size: 15px; margin: 20px 0 8px; font-family: ui-monospace, Menlo, monospace; }
+  .schema { margin-bottom: 4px; table-layout: fixed; }
+  .schema th:nth-child(1) { width: 18%; }
+  .schema th:nth-child(2) { width: 16%; }
+  .schema th:nth-child(3) { width: 8%; }
+  .schema th:nth-child(4) { width: 24%; }
+  .schema th { background: #2b3a55; color: #fff; }
+  .schema td:nth-child(2) { font-family: ui-monospace, Menlo, monospace; color: #7a3e9d; }
+  .schema td:nth-child(3) { text-align: center; }
+  .pk, .fk { display: inline-block; font-size: 12px; border-radius: 4px; padding: 0 8px; white-space: nowrap; }
+  .pk { background: #fff4d6; color: #8a5a00; border: 1px solid #f0d58a; }
+  .fk { background: #e6f4ea; color: #1e6b3a; border: 1px solid #b5dcc1; }
+  .terms { margin: 16px 0; font-size: 14px; color: var(--sub); display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; }
+  .terms dt { font-weight: 600; color: var(--text); }
+  .terms dd { margin: 0; }
+  .pages td:nth-child(2) { white-space: nowrap; }
+  .checks { list-style: none; padding-left: 0; }
+  .checks li { padding-left: 1.6em; text-indent: -1.6em; }
+  .checks li::before { content: "☐"; display: inline-block; width: 1.6em; text-indent: 0; color: var(--accent); }
+  @media (max-width: 600px) {
+    section { padding: 16px; }
+    h1 { font-size: 22px; }
+    table { font-size: 14px; }
+    .schema, .pages { display: block; overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>要件定義書：タスク管理アプリ（task-manager）</h1>
+
+  <section>
+    <h2>プロジェクト概要</h2>
+    <p>やることを忘れずに管理し、終わったかどうかをひと目で確認できるWebアプリを作る。</p>
+  </section>
+
+  <section>
+    <h2>想定利用者</h2>
+    <p>やることを忘れずに管理したい個人。</p>
+  </section>
+
+  <section>
+    <h2>解決する課題</h2>
+    <p>やることを頭の中やメモでバラバラに管理していると、忘れたり、終わったかどうか分からなくなったりする。</p>
+  </section>
+
+  <section>
+    <h2>解決方法</h2>
+    <p>ログインした本人だけが見られるタスク一覧に、やることを追加・完了・削除できるようにする。データは保存されるので、ページを閉じても消えない。</p>
+    <p>タスクごとにメモや期限を残せるようにし、終わったタスクは別のページでまとめて見られるようにする。</p>
+  </section>
+
+  <section>
+    <h2>必須機能</h2>
+    <div class="group">
+      <span class="group-label">Day1 の必須機能（講座の前提）</span>
+      <ol>
+        <li>ログイン</li>
+        <li>ログアウト</li>
+        <li>タスクの追加</li>
+        <li>タスクの一覧表示</li>
+        <li>タスクの完了</li>
+        <li>タスクの削除</li>
+      </ol>
+    </div>
+    <div class="group">
+      <span class="group-label add">追加する機能</span>
+      <ol start="7">
+        <li>タスクの編集（内容・メモ・期限を変える）</li>
+        <li>完了済みタスクの一覧表示</li>
+        <li>表示名の変更</li>
+      </ol>
+    </div>
+  </section>
+
+  <section>
+    <h2>今回は作らないもの</h2>
+    <ul>
+      <li>会員登録・パスワード再発行</li>
+      <li>複数人で一つのリストを共有すること</li>
+      <li>通知・リマインダー</li>
+      <li>カテゴリー分け・検索</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>ページ構造</h2>
+    <table class="pages">
+      <tr><th>ページ</th><th>URL</th><th>できること</th></tr>
+      <tr><td>トップページ</td><td><code>/</code></td><td>画面は持たない。ログイン済みなら <code>/tasks</code>、未ログインなら <code>/login</code> へ自動で移動する</td></tr>
+      <tr><td>ログインページ</td><td><code>/login</code></td><td>メールアドレスとパスワードでログインする</td></tr>
+      <tr><td>タスク一覧ページ</td><td><code>/tasks</code></td><td>未完了のタスクの一覧表示・追加・完了・削除</td></tr>
+      <tr><td>完了済みタスクページ</td><td><code>/tasks/done</code></td><td>完了したタスクだけを一覧で見る</td></tr>
+      <tr><td>タスク詳細ページ</td><td><code>/tasks/[id]</code></td><td>タスクの内容・メモ・期限の編集、削除（<code>[id]</code> にはタスクのIDが入る。例：<code>/tasks/123</code>）</td></tr>
+      <tr><td>設定ページ</td><td><code>/settings</code></td><td>表示名の変更、ログアウト</td></tr>
+    </table>
+
+    <div class="tree">
+      <span>/</span><span class="c">トップページ</span>
+      <span>/login</span><span class="c">ログインページ</span>
+      <span>/tasks</span><span class="c">タスク一覧ページ</span>
+      <span class="child">├ /tasks/done</span><span class="c">完了済みタスクページ</span>
+      <span class="child">└ /tasks/[id]</span><span class="c">タスク詳細ページ</span>
+      <span>/settings</span><span class="c">設定ページ</span>
+    </div>
+
+    <div class="diagram">
+<pre class="mermaid">
+flowchart TD
+    top["トップ<br>/"] -- "未ログイン" --> login["ログイン<br>/login"]
+    top -- "ログイン済み" --> tasks["タスク一覧<br>/tasks"]
+    login -- "ログインする" --> tasks
+    tasks -- "完了済みを見る" --> done["完了済み<br>/tasks/done"]
+    done -- "一覧に戻る" --> tasks
+    tasks -- "タスクを選ぶ" --> detail["タスク詳細<br>/tasks/[id]"]
+    detail -- "一覧に戻る" --> tasks
+    tasks -- "設定を開く" --> settings["設定<br>/settings"]
+    settings -- "ログアウトする" --> login
+</pre>
+    </div>
+    <ul>
+      <li>ログインしていない人が <code>/login</code> 以外のページを開いたときは、ログインページへ移動する</li>
+      <li>ほかの人のタスクの詳細ページ（<code>/tasks/[id]</code>）は開けない</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>データアーキテクチャ</h2>
+    <div class="diagram">
+<pre class="mermaid">
+erDiagram
+    USERS ||--o{ TASKS : "持っている"
+
+    USERS {
+        uuid id PK "利用者のID"
+        text email "メールアドレス"
+        text display_name "表示名"
+    }
+
+    TASKS {
+        uuid id PK "タスクのID"
+        uuid user_id FK "だれのタスクか（利用者のID）"
+        text title "タスクの内容"
+        text memo "メモ"
+        date due_date "期限"
+        boolean is_done "完了かどうか"
+        timestamptz created_at "作った日時"
+    }
+</pre>
+    </div>
+
+    <h3 class="tbl-name">users（利用者）テーブル</h3>
+    <table class="schema">
+      <tr><th>カラム名</th><th>型</th><th>必須</th><th>キー</th><th>説明</th></tr>
+      <tr><td><code>id</code></td><td>uuid</td><td>○</td><td><span class="pk">主キー</span></td><td>利用者のID</td></tr>
+      <tr><td><code>email</code></td><td>text</td><td>○</td><td></td><td>メールアドレス</td></tr>
+      <tr><td><code>display_name</code></td><td>text</td><td></td><td></td><td>表示名（設定ページで変更する）</td></tr>
+    </table>
+
+    <h3 class="tbl-name">tasks（タスク）テーブル</h3>
+    <table class="schema">
+      <tr><th>カラム名</th><th>型</th><th>必須</th><th>キー</th><th>説明</th></tr>
+      <tr><td><code>id</code></td><td>uuid</td><td>○</td><td><span class="pk">主キー</span></td><td>タスクのID</td></tr>
+      <tr><td><code>user_id</code></td><td>uuid</td><td>○</td><td><span class="fk">外部キー → users.id</span></td><td>だれのタスクか</td></tr>
+      <tr><td><code>title</code></td><td>text</td><td>○</td><td></td><td>タスクの内容</td></tr>
+      <tr><td><code>memo</code></td><td>text</td><td></td><td></td><td>メモ（空でもよい）</td></tr>
+      <tr><td><code>due_date</code></td><td>date</td><td></td><td></td><td>期限（空でもよい）</td></tr>
+      <tr><td><code>is_done</code></td><td>boolean</td><td>○</td><td></td><td>完了かどうか（最初は false＝未完了）</td></tr>
+      <tr><td><code>created_at</code></td><td>timestamptz</td><td>○</td><td></td><td>作った日時</td></tr>
+    </table>
+
+    <dl class="terms">
+      <dt>主キー（PK）</dt><dd>そのデータを1つに決めるための番号</dd>
+      <dt>外部キー（FK）</dt><dd>ほかのテーブルとつなぐための番号</dd>
+      <dt>型</dt><dd>uuid＝重ならないID、text＝文字、date＝日付、boolean＝はい／いいえ、timestamptz＝日時</dd>
+    </dl>
+    <ul>
+      <li><strong>USERS（利用者）</strong> と <strong>TASKS（タスク）</strong> の2種類の情報を保存する</li>
+      <li>利用者1人に対して、タスクは0個以上ある（図の <code>||--o{</code> は「1人に対して複数」という意味）</li>
+      <li>タスクの <code>user_id</code> で、だれのタスクかをつなげる</li>
+      <li>ログイン中の利用者は、自分のタスクだけを見たり操作したりできる</li>
+      <li>細かな見た目や SQL（データベースへの命令文）は、この段階では決めない</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>扱う情報</h2>
+    <table>
+      <tr><th>情報</th><th>項目</th></tr>
+      <tr><td>利用者</td><td>ID、メールアドレス、表示名</td></tr>
+      <tr><td>タスク</td><td>ID、内容、メモ、期限、完了かどうか、<code>user_id</code>、作った日時</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>完了条件</h2>
+    <div class="group">
+      <span class="group-label">Day1 の必須機能</span>
+      <ul class="checks">
+        <li>正しいメールアドレスとパスワードでログインすると、自分のタスク一覧が表示される</li>
+        <li>タスクを入力して追加すると、一覧に表示される</li>
+        <li>完了にすると、タスク一覧から消え、完了済みタスクページに表示される</li>
+        <li>削除すると、一覧から消える</li>
+        <li>ページを再読み込みしても、タスクが消えていない</li>
+        <li>ログアウトするとログインページに戻り、ほかのページは見られなくなる</li>
+      </ul>
+    </div>
+    <div class="group">
+      <span class="group-label add">追加する機能</span>
+      <ul class="checks">
+        <li>トップページ（<code>/</code>）を開くと、ログイン状態に合わせてログインページかタスク一覧ページに移動する</li>
+        <li>タスク一覧でタスクを選ぶと詳細ページが開き、内容・メモ・期限を変えて保存すると、一覧にも反映される</li>
+        <li>完了済みタスクページには、完了したタスクだけが表示される</li>
+        <li>設定ページで表示名を変えると、再読み込みしても変えた名前のまま残っている</li>
+        <li>ログインしていない状態で <code>/tasks</code> などを開くと、ログインページに移動する</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>未決定事項</h2>
+    <ul>
+      <li>アプリの画面に表示する名前（今は仮に「タスク管理アプリ」）</li>
+      <li>利用者アカウントの作り方（会員登録画面は作らないため、事前にどう用意するか）</li>
+      <li>完了済みのタスクを「未完了に戻す」ことができるようにするか</li>
+      <li>表示名をどこに表示するか（ヘッダーなど）</li>
+      <li>期限が過ぎたタスクを目立たせるか</li>
+    </ul>
+  </section>
+
+</div>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+      fontFamily: '"Hiragino Sans", "Noto Sans JP", sans-serif',
+      primaryColor: "#eaf1fd",
+      primaryBorderColor: "#2f6fdb",
+      primaryTextColor: "#2b2b2b",
+      lineColor: "#6b6b6b"
+    }
+  });
+</script>
+</body>
+</html>
