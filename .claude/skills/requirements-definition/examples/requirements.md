@@ -52,28 +52,18 @@ Day1 の必須機能（講座の前提）
 | タスク詳細ページ | `/tasks/[id]` | タスクの内容・メモ・期限の編集、削除（`[id]` にはタスクのIDが入る。例：`/tasks/123`） |
 | 設定ページ | `/settings` | 表示名の変更、ログアウト |
 
-```text
-/               トップページ
-/login          ログインページ
-/tasks          タスク一覧ページ
-├─ /tasks/done      完了済みタスクページ
-└─ /tasks/[id]      タスク詳細ページ
-/settings       設定ページ
-```
-
 ```mermaid
-flowchart TD
-    top["トップ<br>/"] -- "未ログイン" --> login["ログイン<br>/login"]
-    top -- "ログイン済み" --> tasks["タスク一覧<br>/tasks"]
-    login -- "ログインする" --> tasks
-    tasks -- "完了済みを見る" --> done["完了済み<br>/tasks/done"]
-    done -- "一覧に戻る" --> tasks
-    tasks -- "タスクを選ぶ" --> detail["タスク詳細<br>/tasks/[id]"]
-    detail -- "一覧に戻る" --> tasks
-    tasks -- "設定を開く" --> settings["設定<br>/settings"]
-    settings -- "ログアウトする" --> login
+flowchart LR
+    login["ログイン<br>/login"] -- "ログインする" --> tasks["タスク一覧<br>/tasks<br>（ここが中心）"]
+    tasks <-- "完了済みを見る／戻る" --> done["完了済み<br>/tasks/done"]
+    tasks <-- "タスクを選ぶ／戻る" --> detail["タスク詳細<br>/tasks/[id]"]
+    tasks <-- "設定を開く／戻る" --> settings["設定<br>/settings"]
+    classDef hub fill:#2f6fdb,color:#fff,stroke:#1d4fa8
+    class tasks hub
 ```
 
+- サイトのトップ（`/`）は画面を持たず、ログイン済みなら `/tasks`、未ログインなら `/login` へ自動で移動する
+- ログアウトは設定ページで行い、ログアウトするとログインページに戻る
 - ログインしていない人が `/login` 以外のページを開いたときは、ログインページへ移動する
 - ほかの人のタスクの詳細ページ（`/tasks/[id]`）は開けない
 

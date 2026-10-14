@@ -84,22 +84,6 @@
   }
   .group-label.add { color: #1e6b3a; background: #e6f4ea; }
   .group + .group { margin-top: 12px; }
-  .tree {
-    background: #2b3a55;
-    color: #e8edf6;
-    border-radius: 8px;
-    padding: 14px 18px;
-    margin: 16px 0 0;
-    font-family: ui-monospace, Menlo, monospace;
-    font-size: 14px;
-    line-height: 1.7;
-    overflow-x: auto;
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    column-gap: 32px;
-  }
-  .tree .child { padding-left: 1.5em; }
-  .tree .c { color: #9fb3d6; font-family: "Hiragino Sans", "Noto Sans JP", sans-serif; }
   .pages td:nth-child(1) { white-space: nowrap; }
   .tbl-name { font-size: 15px; margin: 20px 0 8px; font-family: ui-monospace, Menlo, monospace; }
   .schema { margin-bottom: 4px; table-layout: fixed; }
@@ -199,30 +183,20 @@
       <tr><td>設定ページ</td><td><code>/settings</code></td><td>表示名の変更、ログアウト</td></tr>
     </table>
 
-    <div class="tree">
-      <span>/</span><span class="c">トップページ</span>
-      <span>/login</span><span class="c">ログインページ</span>
-      <span>/tasks</span><span class="c">タスク一覧ページ</span>
-      <span class="child">├ /tasks/done</span><span class="c">完了済みタスクページ</span>
-      <span class="child">└ /tasks/[id]</span><span class="c">タスク詳細ページ</span>
-      <span>/settings</span><span class="c">設定ページ</span>
-    </div>
-
     <div class="diagram">
 <pre class="mermaid">
-flowchart TD
-    top["トップ<br>/"] -- "未ログイン" --> login["ログイン<br>/login"]
-    top -- "ログイン済み" --> tasks["タスク一覧<br>/tasks"]
-    login -- "ログインする" --> tasks
-    tasks -- "完了済みを見る" --> done["完了済み<br>/tasks/done"]
-    done -- "一覧に戻る" --> tasks
-    tasks -- "タスクを選ぶ" --> detail["タスク詳細<br>/tasks/[id]"]
-    detail -- "一覧に戻る" --> tasks
-    tasks -- "設定を開く" --> settings["設定<br>/settings"]
-    settings -- "ログアウトする" --> login
+flowchart LR
+    login["ログイン<br>/login"] -- "ログインする" --> tasks["タスク一覧<br>/tasks<br>（ここが中心）"]
+    tasks <-- "完了済みを見る／戻る" --> done["完了済み<br>/tasks/done"]
+    tasks <-- "タスクを選ぶ／戻る" --> detail["タスク詳細<br>/tasks/[id]"]
+    tasks <-- "設定を開く／戻る" --> settings["設定<br>/settings"]
+    classDef hub fill:#2f6fdb,color:#fff,stroke:#1d4fa8
+    class tasks hub
 </pre>
     </div>
     <ul>
+      <li>サイトのトップ（<code>/</code>）は画面を持たず、ログイン済みなら <code>/tasks</code>、未ログインなら <code>/login</code> へ自動で移動する</li>
+      <li>ログアウトは設定ページで行い、ログアウトするとログインページに戻る</li>
       <li>ログインしていない人が <code>/login</code> 以外のページを開いたときは、ログインページへ移動する</li>
       <li>ほかの人のタスクの詳細ページ（<code>/tasks/[id]</code>）は開けない</li>
     </ul>
@@ -338,6 +312,7 @@ erDiagram
   mermaid.initialize({
     startOnLoad: true,
     theme: "base",
+    flowchart: { curve: "linear", nodeSpacing: 40, rankSpacing: 70, padding: 12 },
     themeVariables: {
       fontFamily: '"Hiragino Sans", "Noto Sans JP", sans-serif',
       primaryColor: "#eaf1fd",
